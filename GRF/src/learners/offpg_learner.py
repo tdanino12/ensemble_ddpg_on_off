@@ -41,7 +41,7 @@ class OffPGLearner:
         self.index = 0
         self.first_ind = 0
 
-   def train_on(self, batch: EpisodeBatch, t_env: int, log):
+    def train_on(self, batch: EpisodeBatch, t_env: int, log):
         # Get the relevant quantities
         bs = batch.batch_size
         max_t = batch.max_seq_length
