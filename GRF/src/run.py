@@ -269,7 +269,7 @@ def run_sequential(args, logger):
             buffer.insert_episode_batch(episode_batch)
             off_buffer.insert_episode_batch(episode_batch)
 
-        
+
         if buffer.can_sample(args.batch_size) and off_buffer.can_sample(args.off_batch_size):
             #train critic normall
             uni_episode_sample = buffer.uni_sample(args.batch_size)
@@ -283,8 +283,17 @@ def run_sequential(args, logger):
             episode_sample = buffer.sample_latest(args.batch_size)
             max_ep_t = episode_sample.max_t_filled()
             episode_sample = process_batch(episode_sample[:, :max_ep_t], args)
-            learner.train(episode_sample, runner.t_env, running_log)
+            #learner.train_on(uni_episode_sample, runner.t_env, running_log)
+            learner.train(off_episode_sample, runner.t_env, running_log)
 
+            #episode_sample = buffer.sample_latest(args.batch_size)
+            #max_ep_t = episode_sample.max_t_filled()
+            #episode_sample = process_batch(episode_sample[:, :max_ep_t], args)
+            learner.train_on(episode_sample, runner.t_env, running_log)
+
+
+
+        
 
         # Execute test runs once in a while
         n_test_runs = max(1, args.test_nepisode // runner.batch_size)
