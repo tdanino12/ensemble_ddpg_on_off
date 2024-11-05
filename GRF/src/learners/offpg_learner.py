@@ -40,7 +40,8 @@ class OffPGLearner:
         self.numpy_list = np.zeros(650000)
         self.index = 0
         self.first_ind = 0
-    def train(self, batch: EpisodeBatch, t_env: int, log):
+
+   def train_on(self, batch: EpisodeBatch, t_env: int, log):
         # Get the relevant quantities
         bs = batch.batch_size
         max_t = batch.max_seq_length
@@ -174,6 +175,7 @@ class OffPGLearner:
         pi = mac_out.view(-1, self.n_actions)
         baseline = th.sum(mac_out * q_vals, dim=-1).view(-1).detach()
 
+        
         # Calculate policy grad with mask
         pi_taken = th.gather(pi, dim=1, index=actions.reshape(-1, 1)).squeeze(1)
         pi_taken[mask == 0] = 1.0
@@ -208,6 +210,185 @@ class OffPGLearner:
             self.logger.log_stat("agent_grad_norm", grad_norm, t_env)
             self.logger.log_stat("pi_max", (pi.max(dim=1)[0] * mask).sum().item() / mask.sum().item(), t_env)
             self.log_stats_t = t_env
+      
+
+
+
+    def train(self, batch: EpisodeBatch, t_env: int, log):
+        # Get the relevant quantities
+        bs = batch.batch_size
+        max_t = batch.max_seq_length
+        actions = batch["actions"][:, :-1]
+        terminated = batch["terminated"][:, :-1].float()
+        avail_actions = batch["avail_actions"][:, :-1]
+        mask = batch["filled"][:, :-1].float()
+        mask[:, 1:] = mask[:, 1:] * (1 - terminated[:, :-1])
+        mask = mask.repeat(1, 1, self.n_agents).view(-1)
+        states = batch["state"][:, :-1]
+
+        #build q
+        inputs = self.critic._build_inputs(batch, bs, max_t)
+        q_vals,q1,q2,q3,q4,q5,q6,q7,q8,q9,q10 = self.critic.forward(inputs)
+        
+        q_vals = q_vals.view(bs,max_t,self.n_agents,-1)
+        q_vals = q_vals.detach()[:, :-1]
+
+
+        #combined_tensor = th.cat((q1,q2,q3,q4,q5,q6,q7,q8,q9,q10), dim=-1)
+        #variance = th.var(combined_tensor,dim=-1)
+        #total_var = th.sum(variance,dim=-1)
+        #total_var = total_var.unsqueeze(dim=-1)
+        #total_var = total_var.clone().detach()
+        #total_var = total_var[:,:-1]
+
+
+        mac_out = []
+        '''
+        a1_out = []
+        a2_out = []
+        a3_out = []
+        a4_out = []
+        a5_out = []
+        a6_out = []
+        a7_out = []
+        '''
+        self.mac.init_hidden(batch.batch_size)
+        for t in range(batch.max_seq_length - 1):
+            '''
+            agent_outs,a1,a2,a3,a4,a5,a6,a7 = self.mac.forward(batch, t=t,training=True)
+            a1_out.append(a1)
+            a2_out.append(a2)
+            a3_out.append(a3)
+            a4_out.append(a4)
+            a5_out.append(a5)
+            a6_out.append(a6)
+            a7_out.append(a7)
+            '''
+            agent_outs = self.mac.forward(batch, t=t)
+            mac_out.append(agent_outs)
+        mac_out = th.stack(mac_out, dim=1)  # Concat over time
+
+        '''
+        a1_out = th.stack(a1_out, dim=1)  # Concat over time
+        a2_out = th.stack(a2_out, dim=1)  # Concat over time
+        a3_out = th.stack(a3_out, dim=1)  # Concat over time
+        a4_out = th.stack(a4_out, dim=1)  # Concat over time
+        a5_out = th.stack(a5_out, dim=1)  # Concat over time
+        a6_out = th.stack(a6_out, dim=1)
+        a7_out = th.stack(a7_out, dim=1)
+        '''
+        #mac_out = th.stack(mac_out, dim=1)  # Concat over time
+        '''
+        q_list = [a1_out,a2_out,a3_out,a4_out,a5_out,a6_out,a7_out]
+        mean = (a1_out+a2_out+a3_out+a4_out+a5_out+a6_out+a7_out)/th.tensor(7)
+        
+        a1_out = a1_out.view(mac_out.shape[0],mac_out.shape[1],mac_out.shape[2],mac_out.shape[3])
+        a2_out = a2_out.view(mac_out.shape[0],mac_out.shape[1],mac_out.shape[2],mac_out.shape[3])
+        a3_out = a3_out.view(mac_out.shape[0],mac_out.shape[1],mac_out.shape[2],mac_out.shape[3])
+        a4_out = a4_out.view(mac_out.shape[0],mac_out.shape[1],mac_out.shape[2],mac_out.shape[3])
+        a5_out = a5_out.view(mac_out.shape[0],mac_out.shape[1],mac_out.shape[2],mac_out.shape[3])
+        a6_out = a6_out.view(mac_out.shape[0],mac_out.shape[1],mac_out.shape[2],mac_out.shape[3])
+        a7_out = a7_out.view(mac_out.shape[0],mac_out.shape[1],mac_out.shape[2],mac_out.shape[3])
+        mwan = mean.view(mac_out.shape[0],mac_out.shape[1],mac_out.shape[2],mac_out.shape[3])
+
+        a1_out[avail_actions == 0] = th.tensor(float('-inf'))
+        a2_out[avail_actions == 0] = th.tensor(float('-inf'))
+        a3_out[avail_actions == 0] = th.tensor(float('-inf'))
+        a4_out[avail_actions == 0] = th.tensor(float('-inf'))
+        a5_out[avail_actions == 0] = th.tensor(float('-inf'))
+        a7_out[avail_actions == 0] = th.tensor(float('-inf'))
+
+        total_div=None
+        count=0
+        mean = mean.clone().detach()
+        
+        #mean = mean*mask
+        #mean[mean==0]=th.tensor(float('-inf'))
+        mean = th.softmax(mean,dim=-1)
+        mean[th.isnan(mean)] = 0
+
+        for i in  q_list:
+            #ii = i*mask
+            #ii[ii==0]=th.tensor(float('-inf'))
+            ii = th.softmax(i,dim=-1)
+            d = ii*mean
+            d = d.clone().detach()
+            s_t = th.log(th.sum(th.sqrt(d),dim=-1))
+            s_t[th.isnan(s_t)] = 0
+            s_t.requires_grad=True
+            if(count==0):
+                total_div = s_t.clone()
+                count=1
+            else:
+                 total_div = total_div +s_t.clone()
+
+
+        total_div = total_div.sum()/mask.sum()
+
+        total_div = th.clamp(total_div*th.tensor(-0.0001),-0.1,0.1)
+        total_div = total_div/th.tensor(self.n_agents)
+        '''
+
+
+
+
+
+
+
+        # Mask out unavailable actions, renormalise (as in action selection)
+        mac_out[avail_actions == 0] = 0
+        mac_out = mac_out/mac_out.sum(dim=-1, keepdim=True)
+        mac_out[avail_actions == 0] = 0
+
+
+
+
+
+        # Calculated baseline
+        #####q_taken = th.gather(q_vals, dim=3, index=actions).squeeze(3)
+        pi = mac_out.view(-1, self.n_actions)
+        #print(q_vals.shape)
+        baseline = th.sum(mac_out * q_vals, dim=-1).view(-1)
+        #x = th.gather(q_vals, dim=3, index=actions).squeeze(3)
+        
+        
+        coma_loss = -(self.mixer.forward(baseline.view(actions.shape[0],actions.shape[1],actions.shape[2]), states,False,None)* mask).sum() / mask.sum()
+        
+        # Calculate policy grad with mask
+        #pi_taken = th.gather(pi, dim=1, index=actions.reshape(-1, 1)).squeeze(1)
+        #pi_taken[mask == 0] = 1.0
+        #log_pi_taken = th.log(pi_taken)
+        #coe = self.mixer.k(states).view(-1)
+        #entropy = -(pi*log_pi_taken)
+                    
+        #advantages = (q_taken.view(-1) - baseline).detach()
+
+        #coma_loss = - ((coe * (advantages)* log_pi_taken ) * mask).sum() / mask.sum()
+        #coma_loss = - ((coe * (advantages)* log_pi_taken+total_div ) * mask).sum() / mask.sum()
+        # Optimise agents
+        self.agent_optimiser.zero_grad()
+        coma_loss.backward()
+        grad_norm = th.nn.utils.clip_grad_norm_(self.agent_params, self.args.grad_norm_clip)
+        self.agent_optimiser.step()
+
+        #compute parameters sum for debugging
+        p_sum = 0.
+        for p in self.agent_params:
+            p_sum += p.data.abs().sum().item() / 100.0
+
+        '''
+        if t_env - self.log_stats_t >= self.args.learner_log_interval:
+            ts_logged = len(log["critic_loss"])
+            for key in ["critic_loss", "critic_grad_norm", "td_error_abs", "q_taken_mean", "target_mean", "q_max_mean", "q_min_mean", "q_max_var", "q_min_var"]:
+                self.logger.log_stat(key, sum(log[key])/ts_logged, t_env)
+            self.logger.log_stat("q_max_first", log["q_max_first"], t_env)
+            self.logger.log_stat("q_min_first", log["q_min_first"], t_env)
+            #self.logger.log_stat("advantage_mean", (advantages * mask).sum().item() / mask.sum().item(), t_env)
+            self.logger.log_stat("coma_loss", coma_loss.item(), t_env)
+            self.logger.log_stat("agent_grad_norm", grad_norm, t_env)
+            self.logger.log_stat("pi_max", (pi.max(dim=1)[0] * mask).sum().item() / mask.sum().item(), t_env)
+            self.log_stats_t = t_env
+        '''    
 
     def train_critic(self, on_batch, best_batch=None, log=None):
         bs = on_batch.batch_size
