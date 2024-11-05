@@ -5,7 +5,7 @@ epsilon_start: .5
 epsilon_finish: .05
 epsilon_anneal_time: 500000
 mask_before_softmax: False
-soft_modul: True
+soft_modul: False
 runner: "episode"
 
 wandb_project: "diversity11so_many_baneling"
