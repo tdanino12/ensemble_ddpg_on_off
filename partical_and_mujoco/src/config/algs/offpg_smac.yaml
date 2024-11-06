@@ -35,7 +35,7 @@ tb_lambda: 0.93
 mixing_embed_dim: 32
 
 # use COMA
-agent_output_type: "pi_logits"
+agent_output_type: "continious"
 learner: "offpg_learner"
 critic_q_fn: "coma"
 critic_baseline_fn: "coma"
