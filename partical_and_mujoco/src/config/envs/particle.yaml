@@ -8,3 +8,4 @@ env_args:
   agent_view_radius: 1.5
   score_function: "min"
   partial_obs: True
+  seed: 0
