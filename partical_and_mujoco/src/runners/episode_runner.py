@@ -67,6 +67,9 @@ class EpisodeRunner:
             actions = self.mac.select_actions(self.batch, t_ep=self.t, t_env=self.t_env, test_mode=test_mode, learner=learner)
 
             reward, terminated, env_info = self.env.step(actions[0])
+            if isinstance(reward, (list, tuple)):
+                assert (reward[1:] == reward[:-1]), "reward has to be cooperative!"
+                reward = reward[0]
             episode_return += reward
 
             post_transition_data = {
