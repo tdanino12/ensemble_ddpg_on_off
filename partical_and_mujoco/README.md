@@ -33,7 +33,7 @@ The `requirements.txt` file can be used to install the necessary packages into a
 ## Run an experiment 
 
 ```shell
-python3 src/main.py --config=offpg_smac --env-config=sc2 with env_args.map_name=10m_vs_11m
+python3 src/main.py --config=offpg_smac --env-config=particle with env_args.scenario_name=continuous_pred_prey_3a t_max=2000000
 ```
 
 The config files act as defaults for an algorithm or environment. 
