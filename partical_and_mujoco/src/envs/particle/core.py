@@ -1,5 +1,6 @@
 # From https://github.com/openai/multiagent-particle-envs
 import numpy as np
+import torch as th
 
 # physical/external base state of all entites
 class EntityState(object):
@@ -172,10 +173,10 @@ class World(object):
                 [f_a, f_b] = self.get_collision_force(entity_a, entity_b)
                 if(f_a is not None):
                     if(p_force[a] is None): p_force[a] = 0.0
-                    p_force[a] = f_a #+ p_force[a] 
+                    p_force[a] = th.from_numpy(f_a) + p_force[a]
                 if(f_b is not None):
                     if(p_force[b] is None): p_force[b] = 0.0
-                    p_force[b] = f_b #+ p_force[b]        
+                    p_force[b] = th.from_numpy(f_b) + p_force[b]   
         return p_force
 
     # integrate physical state
@@ -183,8 +184,9 @@ class World(object):
         for i,entity in enumerate(self.entities):
             if not entity.movable: continue
             entity.state.p_vel = entity.state.p_vel * (1 - self.damping)
+            
             if (p_force[i] is not None):
-                entity.state.p_vel += (p_force[i] / entity.mass) * self.dt
+                entity.state.p_vel += (p_force[i].detach().numpy() / entity.mass) * self.dt
             if entity.max_speed is not None:
                 speed = np.sqrt(np.square(entity.state.p_vel[0]) + np.square(entity.state.p_vel[1]))
                 if speed > entity.max_speed:
