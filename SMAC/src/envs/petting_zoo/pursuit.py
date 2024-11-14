@@ -2,7 +2,7 @@ from envs.multiagentenv import MultiAgentEnv
 from utils.dict2namedtuple import convert
 import numpy as np
 from gym.spaces import Box
-
+from pettingzoo.sisl import pursuit_v4
 
 class Pursuit(MultiAgentEnv):
     def __init__(self, batch_size=None, **kwargs):
@@ -15,34 +15,31 @@ class Pursuit(MultiAgentEnv):
         self.n_agents = 2
         self.n_actions = 1
         self.episode_limit = 1
-
-        self.state = np.ones(5)
-        self.action_space = [Box(low=-1, high=1,shape=(1,)), Box(low=-1, high=1,shape=(1,))]
-
-    def _reward(self, x, y):
-        r = -0.1 * (x**2 + y**2)
-        # if np.sqrt(0.5**2 - x**2 - y**2) > 0:
-        #     r += np.sqrt(0.5**2 - x**2 - y**2)
-        if x > 0 and y > 0 and abs(x-y) < 0.01:
-            r += max(0.1, 0.00001/(abs(x - y)+0.00001)) + (x + y)
-            # r += (x + y)
-        return r
-
+        self.env = pursuit_v4.parallel_env(
+                                      max_cycles=500,
+                                      x_size=16,
+                                      y_size=16,
+                                      shared_reward=True,
+                                      n_evaders=30,
+                                      n_pursuers=8,
+                                      obs_range=7,
+                                      n_catch=2,
+                                      freeze_evaders=False,
+                                      tag_reward=0.01,
+                                      catch_reward=5.0,
+                                      urgency_reward=-0.1,
+                                      surround=True,
+                                      constraint_window=1.0,
+        )
+        self.state = self.env.observation_spaces['prusuer_0']
+        self.action_space = self.env.action_spaces['prusuer_0']
     def reset(self):
-        """ Returns initial observations and states"""
-        return self.state, self.state
+        self.observations, infos = self.env.reset()
+        return self.observations, self.state
 
     def step(self, actions):
-        """ Returns reward, terminated, info """
-        reward = self._reward(actions[0], actions[1])
-
-        info = {}
-        terminated = True
-        info["episode_limit"] = False
-        info["x"] = actions[0]
-        info["y"] = actions[1]
-
-        return reward, terminated, info
+        self.observations, rewards, terminations, truncations, infos = self.env.step(actions)
+        return rewards, terminations, infos
 
     def get_obs(self):
         return [self.state for _ in range(self.n_agents)]
@@ -59,7 +56,6 @@ class Pursuit(MultiAgentEnv):
         return self.state
 
     def get_state_size(self):
-        """ Returns the shape of the state"""
         return len(self.state)
 
     def get_avail_actions(self):
