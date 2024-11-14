@@ -41,7 +41,7 @@ class Pursuit(MultiAgentEnv):
         return [self.state for _ in range(self.n_agents)]
 
     def get_obs_agent(self, agent_id):
-        raise self.observations['pursuer_{}'format(agent_id)]
+        return self.observations['pursuer_{}'.format(agent_id)]
 
     def get_obs_size(self):
         """ Returns the shape of the observation """
