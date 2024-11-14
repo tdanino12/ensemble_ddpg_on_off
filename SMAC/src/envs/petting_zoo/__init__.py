@@ -1,1 +1,1 @@
-from .petting_zoo import pursuit
+from .pursuit import Pursuit
