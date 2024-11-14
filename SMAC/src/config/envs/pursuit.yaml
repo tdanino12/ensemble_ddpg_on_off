@@ -12,4 +12,3 @@ log_interval: 10000
 runner_log_interval: 10000
 learner_log_interval: 10000
 t_max: 20500000000000000000000000000000000000000000000000000
-obs_agent_id: False
