@@ -27,8 +27,8 @@ class Pursuit(MultiAgentEnv):
                                       surround=True,
                                       constraint_window=1.0,
         )
-        self.state = self.env.observation_spaces['prusuer_0']
-        self.action_space = self.env.action_spaces['prusuer_0']
+        self.state = self.env.observation_spaces['pursuer_0']
+        self.action_space = self.env.action_spaces['pursuer_0']
     def reset(self):
         self.observations, infos = self.env.reset()
         return self.observations, self.state
