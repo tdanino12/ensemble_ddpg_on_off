@@ -45,12 +45,11 @@ class Pursuit(MultiAgentEnv):
         return [self.state for _ in range(self.n_agents)]
 
     def get_obs_agent(self, agent_id):
-        """ Returns observation for agent_id """
-        raise NotImplementedError
+        raise self.observations['pursuer_{}'format(agent_id)]
 
     def get_obs_size(self):
         """ Returns the shape of the observation """
-        return self.get_state_size()
+        return len(self.observations['pursuer_{}'format(agent_id)])
 
     def get_state(self):
         return self.state
@@ -79,7 +78,7 @@ class Pursuit(MultiAgentEnv):
     def get_env_info(self):
         env_info = {"state_shape": self.get_state_size(),
                     "obs_shape": self.get_obs_size(),
-                    "n_actions": self.get_total_actions(),
+                    "n_actions": 5,
                     "n_agents": self.n_agents,
                     "episode_limit": self.episode_limit,
                     "action_spaces": self.action_space,
