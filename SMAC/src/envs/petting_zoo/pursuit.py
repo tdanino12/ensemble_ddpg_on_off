@@ -6,14 +6,10 @@ from pettingzoo.sisl import pursuit_v4
 
 class Pursuit(MultiAgentEnv):
     def __init__(self, batch_size=None, **kwargs):
-        # Unpack arguments from sacred
-        args = kwargs["env_args"]
-        if isinstance(args, dict):
-            args = convert(args)
 
         # Define the agents and actions
-        self.n_agents = 2
-        self.n_actions = 1
+        self.n_agents = 8
+        self.n_actions = 5
         self.episode_limit = 1
         self.env = pursuit_v4.parallel_env(
                                       max_cycles=500,
@@ -79,7 +75,7 @@ class Pursuit(MultiAgentEnv):
         env_info = {"state_shape": self.get_state_size(),
                     "obs_shape": self.get_obs_size(),
                     "n_actions": 5,
-                    "n_agents": self.n_agents,
+                    "n_agents": 8,
                     "episode_limit": self.episode_limit,
                     "action_spaces": self.action_space,
                     "actions_dtype": np.float32,
