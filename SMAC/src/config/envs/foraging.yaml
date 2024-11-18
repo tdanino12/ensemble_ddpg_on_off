@@ -8,6 +8,7 @@ env_args:
   partially_observe: True
   sight: 2
   is_print: False
+  seed: 0
   need_render: False
 
 learner_log_interval: 10000
