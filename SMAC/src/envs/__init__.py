@@ -13,7 +13,7 @@ REGISTRY = {}
 REGISTRY["sc2"] = partial(env_fn, env=StarCraft2Env)
 REGISTRY["stag_hunt"] = partial(env_fn, env=StagHunt)
 REGISTRY["pursuit"] = partial(env_fn, env=Pursuit)
-REGISTRY["foraging"] =  partial(env_fn, env=ForagingEnv),
+REGISTRY["foraging"] =  partial(env_fn, env=ForagingEnv)
 
 if sys.platform == "linux":
     os.environ.setdefault("SC2PATH",
