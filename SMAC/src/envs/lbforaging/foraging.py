@@ -15,7 +15,7 @@ class ForagingEnv(MultiAgentEnv):
     def __init__(self,
                  field_size: int,
                  players: int,
-                 max_food: int,
+                 max_num_food: int,
                  force_coop: bool,
                  partially_observe: bool,
                  sight: int,
@@ -35,7 +35,7 @@ class ForagingEnv(MultiAgentEnv):
 
         self.agent_score = np.zeros(players)
 
-        env_id = "Foraging{4}-{0}x{0}-{1}p-{2}f{3}-v1".format(field_size, players, max_food,
+        env_id = "Foraging{4}-{0}x{0}-{1}p-{2}f{3}-v1".format(field_size, players, max_num_food,
                                                               "-coop" if force_coop else "",
                                                               "-{}s".format(sight) if partially_observe else "")
 
@@ -46,7 +46,7 @@ class ForagingEnv(MultiAgentEnv):
                          "players": players,
                          "max_player_level": 3,
                          "field_size": (field_size, field_size),
-                         "max_food": max_food,
+                         "max_num_food": max_num_food,
                          "sight": sight,
                          "max_episode_steps": 50,
                          "force_coop": force_coop,
