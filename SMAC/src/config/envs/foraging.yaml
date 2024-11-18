@@ -4,6 +4,9 @@ env_args:
   field_size: 10
   players: 4
   max_num_food: 2
+  min_player_level: 1
+  min_food_level: 1
+  max_food_level: 3
   force_coop: False
   partially_observe: True
   sight: 2
