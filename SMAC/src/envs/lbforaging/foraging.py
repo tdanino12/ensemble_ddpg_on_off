@@ -16,6 +16,9 @@ class ForagingEnv(MultiAgentEnv):
                  field_size: int,
                  players: int,
                  max_num_food: int,
+                 min_player_level: int,
+                 min_food_level: int,
+                 max_food_level: int,
                  force_coop: bool,
                  partially_observe: bool,
                  sight: int,
@@ -50,6 +53,9 @@ class ForagingEnv(MultiAgentEnv):
                          "sight": sight,
                          "max_episode_steps": 50,
                          "force_coop": force_coop,
+                         "min_player_level": min_player_level,
+                         "min_food_level": min_food_level,
+                         "max_food_level": max_food_level,
                  },
         )
                      
