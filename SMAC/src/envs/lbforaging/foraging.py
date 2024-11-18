@@ -38,6 +38,21 @@ class ForagingEnv(MultiAgentEnv):
         env_id = "Foraging{4}-{0}x{0}-{1}p-{2}f{3}-v1".format(field_size, players, max_food,
                                                               "-coop" if force_coop else "",
                                                               "-{}s".format(sight) if partially_observe else "")
+
+        register(
+                 id=env_id,
+                 entry_point="lbforaging.foraging:ForagingEnv",
+                 kwargs={
+                         "players": players,
+                         "max_player_level": 3,
+                         "field_size": (field_size, field_size),
+                         "max_food": max_food,
+                         "sight": sight,
+                         "max_episode_steps": 50,
+                         "force_coop": force_coop,
+                 },
+        )
+                     
         if is_print:
             print('Env:', env_id, file=stderr)
         self.env = gym.make(env_id)
