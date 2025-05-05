@@ -23,6 +23,14 @@ map_param_registry = {
         "unit_type_bits": 0,
         "map_type": "hydralisks",
     },
+    "2_corridors": {
+        "n_agents": 2,
+        "n_enemies": 1,
+        "limit": 200,
+        "a_race": "T",
+        "b_race": "P",
+        "unit_type_bits": 0,
+        "map_type": 'marines'},
     "7sz": {
         "n_agents": 14,
         "n_enemies": 14,
