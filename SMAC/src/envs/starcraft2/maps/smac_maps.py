@@ -40,6 +40,14 @@ map_param_registry = {
         "unit_type_bits": 2,
         "map_type": "stalkers_and_zealots",
     },
+    "2_corridors": {
+        "n_agents": 2,
+        "n_enemies": 1,
+        "limit": 200,
+        "a_race": "T",
+        "b_race": "P",
+        "unit_type_bits": 0,
+        "map_type": 'marines'},
     "3s5z_vs_4s6z": {
         "n_agents": 8,
         "n_enemies": 10,
